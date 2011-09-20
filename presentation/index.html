@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+
+<!--
+  Google HTML5 slide template
+
+  Authors: Luke Mahé (code)
+           Marcin Wichary (code and design)
+           
+           Dominic Mazzoni (browser compatibility)
+           Charles Chen (ChromeVox support)
+
+  URL: http://code.google.com/p/html5slides/
+-->
+
+<html>
+  <head>
+    <title>Presentation</title>
+
+    <meta charset='utf-8'>
+    <script
+      src='slides.js'></script>
+  </head>
+  
+  <style>
+    /* Your individual styles here, or just use inline styles if that’s
+    what you want. */
+
+       .slides article   { background-image:url('http://www.gobas.de/grafik/logo_gobas.jpg') !important; background-color:white;}
+    
+  </style>
+  <link rel="stylesheet" type="text/css" href="http://shjs.sourceforge.net/css/sh_acid.css">
+
+
+  <body style='display: none'>
+
+    <section class='slides layout-regular template-default'>
+      
+      <!-- Your slides (<article>s) go here. Delete or comment out the
+           slides below. -->
+
+
+        
+        
+      <!--      
+      <article class='biglogo'>
+      </article>
+
+      -->
+      <article>
+        <h1>
+          BDD mit Cucumber
+        </h1>
+        <p>
+          für ShareNotes
+        </p>
+      </article>
+
+
+      <article>
+
+        <h3>Was bringt uns BDD?</h3>
+        <ul class="build">
+          <li>Design der Software</li>
+          <li>Fokus auf Businessvalue</li>
+          <li>Definition of done</li>
+          <li>Outside-In</li>
+        </ul>
+
+      </article>
+
+
+      <article class="smaller">
+
+        <section>
+        <h3>
+          Schnittstelle zwischen Stakeholder und Team
+        </h3>
+        <br />
+        <pre class="sh_cucumber">
+Feature: [Title]
+
+  As a [role]
+  I want [functionality]
+  So that [benefit]
+
+  Acceptance Criteria: (presented as scenarios)
+
+  Scenario 1: [Description]
+    Given [context]
+      And [some more context]...
+    When [event]
+    Then [Outcome]
+      And [another outcome]...
+  
+  Scenario 2: ...
+
+</pre>
+        </section>
+      </article>
+
+      <article class="smaller">
+<h3>Beispiel Geldautomat (ATM)</h3>
+<pre class="sh_cucumber">Feature: Account Holder withdraws cash
+ 
+As an Account Holder
+I want to withdraw cash from an ATM
+So that I can get money when the bank is closed
+ 
+Scenario 1: Account has sufficient funds
+Given the account balance is \$100
+ And the card is valid
+When the Account Holder requests \$20
+Then the ATM should dispense \$20
+ And the account balance should be \$80
+ And the card should be returned
+ 
+Scenario 2: Account has insufficient funds
+Given the account balance is \$10
+ And the card is valid
+When the Account Holder requests \$20
+Then the ATM should not dispense any money
+ And the ATM should say there are insufficient funds
+ And the account balance should be \$20
+ And the card should be returned
+ 
+Scenario 3: The ATM has insufficient funds...
+</pre>
+</article>
+
+<article>
+<h2>BDD mit Cucumber</h2>
+</article>
+
+
+<article>
+<h3>Step definitions</h3>
+<pre class="sh_ruby">
+Given /^ [Regex..] $/ do
+  # code goes here...
+end
+</pre>
+<pre class="sh_ruby">
+When /^ [Regex..] $/ do
+  # code goes here...
+end
+</pre>
+<pre class="sh_ruby">
+Then /^ [Regex..] $/ do
+  # code goes here...
+end
+</pre>
+
+</article>
+
+
+<article>
+<h3>"code" can be everything:</h3>
+<ul class="build">
+  <li>HTTP-Client (Typhoeus etc.)</li>
+  <li>Mail-Client (IMAP / POP)</li>
+  <li>Browser-simulator</li>
+  <li>remote controlled Browser</li>
+  <li>remote controlled Iphone</li>
+  <li>Websocket-Client</li>
+  <li>...</li>
+</li>
+</article>
+
+
+<article class="smaller">
+<h3>Beispiel Webapp (stories)</h3>
+<pre class="sh_cucumber">
+Feature: Sign into the webapp
+  As an unauthenticated user with an account
+  I want to sign into the webapp
+  So that I can access my secure personal data
+
+  Scenario: With valid credentials
+    Given I have no cookies
+    When I visit "http://webapp.sharenotes.de"
+    And I fill in "Email" with "rl@gobas.de"
+    And I fill in "Password" with "test"
+    And I press "Einloggen"
+    Then I should see "Abmelden"
+
+  Scenario: With invalid credentials
+    Given I have no cookies
+    When I visit "http://webapp.sharenotes.de"
+    And I fill in "user_session_email" with "rl@gobas.de"
+    And I fill in "user_session_password" with "test12"
+    And I press "Einloggen"
+    Then I should not see "Abmelden"
+    And I should see "Logindaten nicht korrekt"
+</pre>
+</article>
+
+<article>
+<h3>Beispiel Webapp (steps)</h3>
+<pre class="sh_ruby">
+Given /^I have no cookies$/ do
+  @browser.clear_cookies
+end
+
+### [urls] When I visit "http://www.twitter.com/"
+When /^I visit "(.*)"$/ do |url| 
+  @browser.goto(url)
+end
+
+# Buttons get pressed, links get clicked
+### [buttons] When I press "Submit" 
+When /^I press "([^\"]*)"$/ do |button|
+  form_button = find_button(button)
+  form_button.click
+end
+</pre>
+</article>
+
+
+<article class="smaller">
+<h3>Beispiel Store (stories)</h3>
+<pre class="sh_cucumber">
+Feature: Sign up for an free-account 
+  As a anonymous User
+  I want to register me for a free-account
+  In order to get a personal and secure area
+
+  Background:
+    Given I have no cookies
+    When I visit "http://www-test.shrnts.de/"
+      And I click "Gratisversion"
+      And I fill in "Vorname" with "hans"
+      And I fill in "Name" with "wurst"
+      And I fill in "Email" with "hw@asdasd.de"
+      And I fill in "Passwort" with "my_pass"
+
+  Scenario: Sign up with false password_confirmation 
+     When I fill in "Passwort wiederholen" with "my_passsss"
+      And I accept the general terms and conditions
+      And I accept the data privacy agreement
+      And I press "Account anlegen"
+    Then I should see "Bitte das gleiche Passwort wie oben angeben"
+
+  Scenario: Sign up without accepting general terms
+    When I fill in "Passwort wiederholen" with "my_passsss"
+      And I accept the data privacy agreement
+      And I press "Account anlegen"
+    Then I should see "Bitte zustimmen"
+</pre>
+</article>
+
+
+
+
+<article class="smaller">
+<h3>Beispiel API-Client ShareNotes (stories)</h3>
+<pre class="sh_cucumber">
+Feature: Get Account Information
+  In order to get information about my account
+  As a ShareNotes Client
+  I want to call account.json
+
+  Scenario: with valid credentials                   
+    Given i am a valid user                          
+    When i call account.json                         
+    Then the response body should contain an account key
+    And the response code should be 200
+
+  Scenario: with invalid credentials               
+    Given i am an invalid user                     
+    When i call account.json                       
+    Then the response body should contain an error key
+    And the response code should be 405
+
+  Scenario: without credentials                          
+    Given i didnt enter any credentials                  
+    When i call account.json                            
+    Then the response body should contain an error key      
+    And the response body should not contain an account key
+    And the response code should be 404 
+
+</pre>
+</article>
+
+<article class="smaller">
+<h3>Beispiel API-Client ShareNotes (steps)</h3>
+<pre class="sh_ruby">
+Given /^I am a valid user$/ do
+  @client = Client.new( { :username => "rl@gobas.de" , :password => "test" })
+end
+
+Given /^I am an invalid user$/ do
+  @client = Client.new( { :username => "rl@gobas.de" , :password => "failpass" })
+end
+
+When /^I call account\.json$/ do
+  @response = @client.get_account_json
+  @response.should_not be false
+  @json = JSON.parse(@response.body)
+  @json.should_not be false
+end
+
+Then /^the response body should contain an (.*) key$/ do |key|
+  @json.should have_key(key)
+end
+
+Then /^the response body should not contain an (.*) key$/ do |key|
+  @json.should_not have_key(key)
+end
+
+Then /^the response code should be (\d+)$/ do |code|
+  @response.code.should == code.to_i
+end
+</pre>
+</article>
+
+<article>
+<h3>Beispiel iPhone-App (stories)</h3>
+<pre class="sh_cucumber">
+Feature: Add things to list
+  As a Greymind user
+  I want to add things to my list
+  So I dont have to hold them in mind
+
+Scenario: Add a thing
+  Given I launch the app
+  Then I should see 3 rows in section 0
+  When I press the plus button
+  Then I should see 4 rows in section 0
+  When I press the plus button
+  Then I should see 5 rows in section 0
+</pre>
+</article>
+
+<article class="smaller">
+<h3>Beispiel iPhone-App (steps)</h3>
+<pre class="sh_cucumber">
+When /^I press the plus button$/ do
+  touch( "toolbarButton marked:'Add'")
+end
+
+Then /^I should see (\d+) rows in section (\d+)$/ do |expected_num_rows, section|  
+  section = section.to_i
+  expected_num_rows = expected_num_rows.to_i
+  num_rows_array = frankly_map( "tableView first", "numberOfRowsInSection:", section ) 
+  raise "no table found" if num_rows_array.empty?
+  num_rows_array.first.should eq(expected_num_rows)
+end
+</pre>
+</article>
+
+<article>
+<h3>Links / Credits</h3>
+<ul>
+  <li><a href="http://dannorth.net/whats-in-a-story/">http://dannorth.net/whats-in-a-story/</a></li>
+  <li><a href="http://www.slideshare.net/bkeepers/behavior-driven-development-with-cucumber-presentation">http://www.slideshare.net/bkeepers/behavior-driven-development-with-cucumber-presentation</a></li>
+
+
+</ul>
+</article>
+
+
+</section>
+  </body>
+</html>
